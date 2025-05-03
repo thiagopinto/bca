@@ -3,7 +3,10 @@ import { ITransactionRepository } from '../interfaces/transaction-repository.int
 import { CreateTransactionDto } from '../dto/create-transaction.dto';
 import { Transaction } from '../entities/transaction.entity';
 import { StatisticsResponseDto } from '../../shared/dtos/statistics-response.dto';
-
+/*
+ * O TransactionsService é responsável por gerenciar as transações financeiras.
+ * Represento UseCase Clean Architecture 👀
+ **/
 @Injectable()
 export class TransactionsService {
   constructor(
@@ -14,6 +17,13 @@ export class TransactionsService {
   createTransaction(transactionDto: CreateTransactionDto): void {
     const now = new Date();
     const transactionTimestamp = new Date(transactionDto.timestamp);
+
+    if (transactionDto.amount < 0) {
+      throw new HttpException(
+        'Amount cannot be negative',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
 
     if (transactionTimestamp > now) {
       throw new HttpException(
@@ -33,12 +43,9 @@ export class TransactionsService {
     this.transactionRepository.deleteAll();
   }
 
-  getTransactionsInLast60Seconds(): Transaction[] {
-    return this.transactionRepository.getTransactionsInLast60Seconds();
-  }
-
   getStatistics(): StatisticsResponseDto {
-    const transactions = this.getTransactionsInLast60Seconds();
+    const transactions =
+      this.transactionRepository.getTransactionsInLast60Seconds();
 
     if (transactions.length === 0) {
       return {

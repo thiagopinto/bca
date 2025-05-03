@@ -18,9 +18,9 @@ export class InMemoryTransactionRepository implements ITransactionRepository {
 
   getTransactionsInLast60Seconds(): Transaction[] {
     const now = new Date();
-    const sixtySecondsAgo = new Date(now.getTime() - 60000);
+    const timeLimit = new Date(now.getTime() - 60000);
     return this.transactions.filter(
-      (transaction) => transaction.timestamp >= sixtySecondsAgo,
+      (transaction) => transaction.timestamp >= timeLimit,
     );
   }
 }

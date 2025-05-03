@@ -1,8 +1,7 @@
-import { IsISO8601, IsNumber, Min } from 'class-validator';
+import { IsISO8601, IsNumber } from 'class-validator';
 
 export class CreateTransactionDto {
   @IsNumber()
-  @Min(0)
   amount: number;
 
   @IsISO8601()
