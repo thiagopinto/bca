@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   HttpException,
   HttpStatus,
@@ -35,5 +36,16 @@ export class TransactionsController {
       }
       throw new HttpException('Invalid input', HttpStatus.BAD_REQUEST); // Captura erros de validação (e outros)
     }
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Apaga todas as transações' })
+  @ApiResponse({
+    status: 200,
+    description: 'Todas as transações apagadas com sucesso',
+  })
+  @HttpCode(HttpStatus.OK)
+  deleteAllTransactions(): void {
+    this.transactionsService.deleteAllTransactions();
   }
 }
