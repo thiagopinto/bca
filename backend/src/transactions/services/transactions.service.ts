@@ -1,11 +1,14 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ITransactionRepository } from '../interfaces/transaction-repository.interface'; // Importe a interface
 import { CreateTransactionDto } from '../dto/create-transaction.dto';
 import { Transaction } from '../entities/transaction.entity';
 
 @Injectable()
 export class TransactionsService {
-  constructor(private readonly transactionRepository: ITransactionRepository) {} // Use a interface
+  constructor(
+    @Inject('TRANSACTION_REPOSITORY')
+    private readonly transactionRepository: ITransactionRepository,
+  ) {}
 
   createTransaction(transactionDto: CreateTransactionDto): void {
     const now = new Date();
