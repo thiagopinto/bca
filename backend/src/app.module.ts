@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { TransactionsModule } from './transactions/transactions.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { LoggerModule } from 'nestjs-pino';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { HealthcheckModule } from './healthcheck/healthcheck.module';
 
 @Module({
   imports: [
@@ -25,6 +27,15 @@ import { LoggerModule } from 'nestjs-pino';
             : undefined,
       },
     }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60,
+          limit: 10,
+        },
+      ],
+    }),
+    HealthcheckModule,
   ],
   controllers: [AppController],
   providers: [AppService],
