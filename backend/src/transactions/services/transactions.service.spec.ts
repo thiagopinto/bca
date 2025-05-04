@@ -1,18 +1,52 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { TransactionsService } from './services/transactions.service';
+import { TransactionsService } from './transactions.service';
+import { InMemoryTransactionRepository } from '../repositories/in-memory-transaction.repository';
+import { CreateTransactionDto } from '../dto/create-transaction.dto';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 describe('TransactionsService', () => {
-  let service: TransactionsService;
+  let transactionsService: TransactionsService;
+  let transactionRepository: InMemoryTransactionRepository;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [TransactionsService],
-    }).compile();
-
-    service = module.get<TransactionsService>(TransactionsService);
+  beforeEach(() => {
+    transactionRepository = new InMemoryTransactionRepository();
+    transactionsService = new TransactionsService(transactionRepository);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  describe('createTransaction', () => {
+    it('should create a transaction', () => {
+      const transactionDto: CreateTransactionDto = {
+        amount: 100,
+        timestamp: new Date().toISOString(),
+      };
+
+      transactionsService.createTransaction(transactionDto);
+
+      // Como InMemoryTransactionRepository armazena as transações em memória,
+      // podemos acessar diretamente a propriedade 'transactions' para verificar
+      // se a transação foi salva corretamente.
+      const transactions = transactionRepository['transactions'];
+      expect(transactions).toHaveLength(1);
+      expect(transactions[0].amount).toBe(transactionDto.amount);
+      expect(transactions[0].timestamp.toISOString()).toBe(
+        transactionDto.timestamp,
+      );
+    });
+
+    it('should throw an error if the timestamp is in the future', () => {
+      const futureTimestamp = new Date(Date.now() + 60000).toISOString(); // 60 segundos no futuro
+      const transactionDto: CreateTransactionDto = {
+        amount: 100,
+        timestamp: futureTimestamp,
+      };
+
+      expect(() =>
+        transactionsService.createTransaction(transactionDto),
+      ).toThrowError(
+        new HttpException(
+          'Transaction timestamp cannot be in the future',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        ),
+      );
+    });
   });
 });
