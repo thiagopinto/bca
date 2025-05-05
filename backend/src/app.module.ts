@@ -6,6 +6,7 @@ import { StatisticsModule } from './statistics/statistics.module';
 import { LoggerModule } from 'nestjs-pino';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { HealthcheckModule } from './healthcheck/healthcheck.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { HealthcheckModule } from './healthcheck/healthcheck.module';
       ],
     }),
     HealthcheckModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
