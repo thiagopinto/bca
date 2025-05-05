@@ -1,4 +1,4 @@
-name: CI/CD - NestJS com Testes e Deploy via Docker Compose
+name: CI/CD - NestJS com Testes
 
 on:
   push:
