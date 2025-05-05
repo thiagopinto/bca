@@ -1,34 +1,36 @@
-# Use a imagem base do Node.js 22 para construir a aplicação
+# Etapa 1: Construção da aplicação
 FROM node:22-alpine AS builder
 
-# Defina o diretório de trabalho dentro do container
+# Diretório de trabalho
 WORKDIR /app
 
-# Copie os arquivos de package.json e yarn.lock
+# Copia os arquivos necessários para instalar dependências
 COPY package.json yarn.lock ./
 
-# Instale as dependências usando Yarn
+# Instala dependências
 RUN yarn install --frozen-lockfile
 
-# Copie o restante dos arquivos da aplicação
+# Copia o restante da aplicação, incluindo o .env
 COPY . .
 
-# Compile a aplicação TypeScript
+# Compila o projeto
 RUN yarn build
 
-# Use uma imagem menor para a produção
+# Etapa 2: Imagem de produção
 FROM node:22-alpine AS deploy
 
-# Defina o diretório de trabalho
+# Diretório de trabalho
 WORKDIR /app
 
-# Copie apenas os arquivos necessários da fase de build
+# Copia a build, dependências e arquivos importantes
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/.env .env
 
-# Exponha a porta que a aplicação vai usar (padrão do NestJS é 3000)
+# Exponha a porta
 EXPOSE 3000
 
-# Comando para iniciar a aplicação
-CMD [ "node", "dist/main.js" ]
+# Inicia a aplicação
+CMD ["node", "dist/main.js"]
+

@@ -3,6 +3,7 @@ import { ITransactionRepository } from '../interfaces/transaction-repository.int
 import { CreateTransactionDto } from '../dto/create-transaction.dto';
 import { Transaction } from '../entities/transaction.entity';
 import { StatisticsResponseDto } from '../../shared/dtos/statistics-response.dto';
+import { StatisticsGateway } from '../../statistics/statistics.gateway';
 /*
  * O TransactionsService é responsável por gerenciar as transações financeiras.
  * Represento UseCase Clean Architecture 👀
@@ -12,6 +13,7 @@ export class TransactionsService {
   constructor(
     @Inject('TRANSACTION_REPOSITORY')
     private readonly transactionRepository: ITransactionRepository,
+    private readonly statisticsGateway: StatisticsGateway,
   ) {}
 
   createTransaction(transactionDto: CreateTransactionDto): void {
@@ -37,6 +39,8 @@ export class TransactionsService {
       transactionTimestamp,
     );
     this.transactionRepository.save(transaction);
+    const updatedStats = this.getStatistics();
+    this.statisticsGateway.broadcastStatistics(updatedStats);
   }
 
   deleteAllTransactions(): void {

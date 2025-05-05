@@ -1,4 +1,5 @@
 import { TransactionsService } from './transactions.service';
+import { StatisticsGateway } from '../../statistics/statistics.gateway';
 import { InMemoryTransactionRepository } from '../repositories/in-memory-transaction.repository';
 import { CreateTransactionDto } from '../dto/create-transaction.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
@@ -6,10 +7,18 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 describe('TransactionsService', () => {
   let transactionsService: TransactionsService;
   let transactionRepository: InMemoryTransactionRepository;
+  let statisticsGateway: StatisticsGateway;
 
   beforeEach(() => {
     transactionRepository = new InMemoryTransactionRepository();
-    transactionsService = new TransactionsService(transactionRepository);
+    statisticsGateway = {
+      broadcastStatistics: jest.fn(),
+    } as unknown as StatisticsGateway;
+
+    transactionsService = new TransactionsService(
+      transactionRepository,
+      statisticsGateway,
+    );
   });
 
   describe('createTransaction', () => {
