@@ -1,0 +1,65 @@
+name: CI/CD - NestJS com Testes e Deploy via Docker Compose
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Build, Unit & E2E Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Instalar dependências
+        run: yarn install --frozen-lockfile
+
+      - name: Rodar testes unitários
+        run: yarn test
+
+      - name: Rodar testes de integração (E2E)
+        run: yarn test:e2e
+
+      - name: 🏗️ Build da aplicação
+        run: yarn build
+
+  deploy:
+    name: Deploy via SSH e Docker Compose
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Enviar código para o servidor
+        run: |
+          rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/bca
+
+      - name: Rodar Docker Compose no servidor remoto
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /home/${{ secrets.SSH_USER }}/bca/docker
+            docker-compose down
+            docker-compose up -d --build
+          EOF
